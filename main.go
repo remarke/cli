@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/remarke/cli/config"
 	Z "github.com/rwxrob/bonzai/z"
 	"github.com/rwxrob/help"
 )
@@ -15,5 +16,5 @@ func main() {
 
 var Cmd = &Z.Cmd{
 	Name:     `rem`,
-	Commands: []*Z.Cmd{help.Cmd},
+	Commands: []*Z.Cmd{help.Cmd, config.Cmd},
 }
