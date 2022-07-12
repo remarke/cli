@@ -1,78 +1,55 @@
 package config
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
-	"os/exec"
 	"path"
 
-	Z "github.com/rwxrob/bonzai/z"
-	"github.com/rwxrob/help"
+	"github.com/remarke/cli/utils"
 	"gopkg.in/yaml.v3"
 )
 
 // Config holds all the user options for editor, folder locations, etc...
 type Config struct {
-	Editor        string
-	PublicFolder  string
-	PrivateFolder string
-	ConfigFolder  string
+	Editor        string `yaml:"editor"`
+	PublicFolder  string `yaml:"public_folder"`
+	PrivateFolder string `yaml:"private_folder"`
 }
 
-var Cmd = &Z.Cmd{
-	Name:     `config`,
-	Aliases:  []string{"c", "conf"},
-	Commands: []*Z.Cmd{help.Cmd, initialize},
+func (c *Config) getConfig() (*Config, error) {
+	configPath := c.getConfigFilePath()
+	yamlFile, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlFile, c)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
-var edit = &Z.Cmd{
-	Name: `edit`,
-	Call: func(_ *Z.Cmd, args ...string) error {
-		data, err := readUserConfig()
-
-		return nil
-	},
+func (c *Config) getConfigFilePath() string {
+	base, _ := os.UserHomeDir()
+	return path.Join(base, ".config", "remarke", "config.yaml")
 }
 
-var initialize = &Z.Cmd{
-	Name: `init`,
-	Call: func(_ *Z.Cmd, args ...string) error {
-		base, _ := os.UserHomeDir()
-
-		defaultConfig := Config{
-			Editor:        "vim",
-			PublicFolder:  path.Join(base, "Repos", "remarke"),
-			PrivateFolder: path.Join(base, "Private", "remarke"),
-			ConfigFolder:  path.Join(base, ".config/remarke"),
-		}
-
-		marshallConfig, _ := yaml.Marshal(&defaultConfig)
-
-		fileCreated, err := createConfigFile(defaultConfig.ConfigFolder, marshallConfig)
-
-		if err != nil || !fileCreated {
-			log.Fatalf("Could not write the file: %v", err)
-		}
-
-		if fileCreated {
-			log.Print("File created succesfully")
-		}
-
-		return nil
-	},
+func (c *Config) getConfigFolderPath() string {
+	base, _ := os.UserHomeDir()
+	return path.Join(base, ".config", "remarke")
 }
 
-func createConfigFile(path string, data []byte) (bool, error) {
-	_, err := ioutil.ReadFile(path)
+func (c *Config) setConfigFile(data []byte) (bool, error) {
+	configPath := c.getConfigFolderPath()
+	_, err := ioutil.ReadFile(configPath)
 
 	if err != nil {
-		runShell("mkdir", path)
-		runShell("touch", fmt.Sprintf("%s/config.yaml", path))
+		utils.RunShell("mkdir", configPath)
+		utils.RunShell("touch", fmt.Sprintf("%s/config.yaml", configPath))
 
-		err = ioutil.WriteFile(fmt.Sprintf("%s/config.yaml", path), data, 0644)
+		err = ioutil.WriteFile(fmt.Sprintf("%s/config.yaml", configPath), data, 0644)
 
 		if err != nil {
 			return false, err
@@ -80,18 +57,4 @@ func createConfigFile(path string, data []byte) (bool, error) {
 	}
 
 	return true, nil
-}
-
-func runShell(name string, args ...string) {
-	cmd := exec.Command(name, args...)
-	err, _ := cmd.StderrPipe()
-	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-
-	scanner := bufio.NewScanner(err)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
 }
