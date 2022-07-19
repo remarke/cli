@@ -19,6 +19,7 @@ require (
 	github.com/rwxrob/structs v0.6.0 // indirect
 	github.com/rwxrob/term v0.2.8 // indirect
 	github.com/rwxrob/to v0.7.0 // indirect
+	github.com/rwxrob/uniq v0.2.1 // indirect
 	github.com/rwxrob/y2j v0.3.5 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/mod v0.5.1 // indirect

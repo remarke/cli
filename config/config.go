@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/remarke/cli/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -17,7 +16,8 @@ type Config struct {
 	PrivateFolder string `yaml:"private_folder"`
 }
 
-func (c *Config) getConfig() (*Config, error) {
+// GetConfig return an struct reading from the config yaml file
+func (c *Config) GetConfig() (*Config, error) {
 	configPath := c.getConfigFilePath()
 	yamlFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
@@ -46,9 +46,7 @@ func (c *Config) setConfigFile(data []byte) (bool, error) {
 	_, err := ioutil.ReadFile(configPath)
 
 	if err != nil {
-		utils.RunShell("mkdir", configPath)
-		utils.RunShell("touch", fmt.Sprintf("%s/config.yaml", configPath))
-
+		os.Mkdir(configPath, 0755)
 		err = ioutil.WriteFile(fmt.Sprintf("%s/config.yaml", configPath), data, 0644)
 
 		if err != nil {
