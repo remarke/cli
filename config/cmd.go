@@ -6,8 +6,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/remarke/cli/utils"
 	Z "github.com/rwxrob/bonzai/z"
+	"github.com/rwxrob/fs/file"
 	"github.com/rwxrob/help"
 	"gopkg.in/yaml.v3"
 )
@@ -20,11 +20,11 @@ var Cmd = &Z.Cmd{
 
 var edit = &Z.Cmd{
 	Name:        `edit`,
-	Description: `edit command open user configuration using the default EDITOR(the fallback will be vim if not set the environment variable)`,
+	Description: `edit command open user configuration using the default $EDITOR`,
 	Call: func(_ *Z.Cmd, args ...string) error {
 		var config Config
 
-		return Z.Exec(utils.GetEnvironmentEditor(), config.getConfigFilePath())
+		return file.Edit(config.getConfigFilePath())
 	},
 }
 
